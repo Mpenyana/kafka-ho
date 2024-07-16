@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.UUID;
 
 public class ProducerDemo {
 
@@ -29,12 +30,15 @@ public class ProducerDemo {
 
         //sending data;
             // Create Record/Event;
-        ProducerRecord<String, String> record = new ProducerRecord<>("java-test", "Hello, Jafka");
+        ProducerRecord<String, String> record = new ProducerRecord<>("java-test", UUID.randomUUID().toString(),
+                "Key'd up");
 
-        producer.send(record, new Callback() {
-            @Override
-            public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-
+        producer.send(record, (recordMetadata, e) -> {
+            if(e != null) {
+                log.error("Error producing record: ", e);
+            } else {
+                log.info(String.format("Record stored with offset %s, in partition: %s", recordMetadata.offset(),
+                        recordMetadata.partition()));
             }
         });
 
